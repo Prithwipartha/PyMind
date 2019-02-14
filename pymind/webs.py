@@ -178,7 +178,7 @@ class NeuralNet(object):
         print(self)
         plt.show()
 
-    def back_propagate(self, loss=[], sigma=1, mu=0.001, theta=2, previous_nets=False, momentum=False):
+    def back_propagate(self, loss=[], sigma=1, mu=0.001, theta=2, previous_nets=False, momentum=False, bs=1):
         d = self.depth()
         for inp_layer in range(d - 1).__reversed__():
             a = self.x[inp_layer+1].activation
@@ -198,7 +198,7 @@ class NeuralNet(object):
                         self.dw[inp_layer][otp][inp] = (mu*di/(theta*a_z_i*i_j + sigma)) + (self.dw[inp_layer][otp][inp]/200)
                         self.w[inp_layer][otp][inp] += self.dw[inp_layer][otp][inp]
                     else:
-                        self.w[inp_layer][otp][inp] += mu * di/(theta*a_z_i*i_j + sigma)
+                        self.w[inp_layer][otp][inp] += mu * bs * di/(theta*a_z_i*i_j + sigma)
                 next_loss = next_loss + next_loss_partial
             loss = next_loss
         if previous_nets:
@@ -218,7 +218,7 @@ class NeuralNet(object):
                 for j in range(len(loss)):
                     loss[j] += loss_function(labels[i][j], otp[j], der=True)/batch_size
                 if i % batch_size is 0 or i is n-1:
-                    self.back_propagate(loss=loss, sigma=sigma, mu=mu, previous_nets=p_n, momentum=m, theta=theta)
+                    self.back_propagate(loss=loss, sigma=sigma, mu=mu, previous_nets=p_n, momentum=m, theta=theta, bs=batch_size)
                     if plot:
                         loss_plot += [sum(loss*loss)/len(loss)]
                         preds += [otp]
